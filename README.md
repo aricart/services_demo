@@ -21,7 +21,7 @@ deno compile -A get-freq.ts
 ./service &
 ```
 
-# start a frequence service
+# start a frequency service
 ```bash
 ./frequency-service &
 ```
@@ -30,9 +30,11 @@ deno compile -A get-freq.ts
 
 ```bash
 ./service-adm ping
+./service-adm status
+./service-adm info
 ```
 
-# generate some badges and get frequencyh
+# generate some badges and get frequency
 
 ```bash
 ./get-badge --name "Memo Service Tester" --company "Acme Productions"
