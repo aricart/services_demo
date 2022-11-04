@@ -31,7 +31,7 @@ const sub = nc.subscribe("generate.badge");
 const service = await addService(nc, {
   name: "frequency_service",
   version: "0.0.1",
-  description: "nonitors names",
+  description: "monitors names",
   endpoint: {
     subject: "badge.freq",
     handler: (err, msg): Error | void => {
