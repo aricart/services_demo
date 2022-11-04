@@ -73,12 +73,6 @@ const service = await addService(nc, {
   },
 });
 
-const si = service as ServiceImpl;
-const a = si.internal as Endpoint[];
-a.forEach((s: Endpoint) => {
-  console.log(s.subject);
-});
-
 service.done.then((err: Error | null) => {
   if (err) {
     console.log(`${service.name} stopped with error: ${err.message}`);

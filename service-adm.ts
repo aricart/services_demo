@@ -5,6 +5,7 @@ import {
   JSONCodec,
   NatsConnection,
   ServiceInfo,
+  Msg, ServiceStats
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
 import {
@@ -68,7 +69,7 @@ root.addCommand({
     });
     const buf: ServiceInfo[] = [];
     for await (const m of iter) {
-      buf.push(jc.decode(m.data));
+      buf.push(jc.decode((m as Msg).data));
     }
     console.table(buf);
     await nc.close();
@@ -80,7 +81,7 @@ root.addCommand({
   use: "status [--name] [--id]",
   short: "get service status",
   run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
-    const infoJC = JSONCodec<ServiceInfo>();
+    const infoJC = JSONCodec<ServiceStats>();
     const nc = await createConnection(flags);
     const subj = subject("STATUS", flags);
     const iter = await nc.requestMany(
@@ -90,13 +91,14 @@ root.addCommand({
         strategy: RequestStrategy.JitterTimer,
       },
     );
-    const buf: ServiceInfo[] = [];
+    const buf: unknown[] = [];
     for await (const m of iter) {
-      const o = infoJC.decode(m.data);
+      const o = infoJC.decode((m as Msg).data);
       const stats = o.stats[0];
-      delete o.stats;
-      const data = stats.data;
       delete stats.data;
+      const data = stats.data;
+      const oo = o as Record<string,unknown>;
+      delete oo.stats;
       buf.push(Object.assign(o, stats, data));
     }
     console.table(buf);
@@ -121,8 +123,7 @@ root.addCommand({
     );
     const buf: ServiceInfo[] = [];
     for await (const m of iter) {
-      const o = infoJC.decode(m.data);
-      buf.push(o);
+      buf.push(infoJC.decode((m as Msg).data));
     }
     console.table(buf);
     await nc.close();
