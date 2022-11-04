@@ -1,6 +1,7 @@
 import {
   addService,
   connect,
+  Endpoint,
   headers,
   JSONCodec,
   ServiceError,
@@ -8,6 +9,7 @@ import {
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 import { generateBadge } from "./generator.ts";
 import { Empty } from "https://raw.githubusercontent.com/nats-io/nats.deno/main/nats-base-client/mod.ts";
+import { ServiceImpl } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/nats-base-client/service.ts";
 
 type Badge = {
   name: string;
@@ -69,6 +71,12 @@ const service = await addService(nc, {
         });
     },
   },
+});
+
+const si = service as ServiceImpl;
+const a = si.internal as Endpoint[];
+a.forEach((s: Endpoint) => {
+  console.log(s.subject);
 });
 
 service.done.then((err: Error | null) => {
