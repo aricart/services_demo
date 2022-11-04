@@ -1,2 +1,3 @@
 # services_demo
-services_demo using nats javascript
+
+A Demo of the NATS Services Framework
