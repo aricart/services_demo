@@ -20,21 +20,6 @@ const root = cli({
     return 0;
   },
 });
-root.addFlag({
-  short: "n",
-  name: "name",
-  type: "string",
-  usage: "your name",
-  default: "",
-  persistent: true,
-});
-root.addFlag({
-  name: "company",
-  type: "string",
-  usage: "your company",
-  default: "",
-  persistent: true,
-});
 
 root.addFlag({
   name: "server",

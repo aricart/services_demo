@@ -1,11 +1,13 @@
 import { cli, Command, Flags } from "https://deno.land/x/cobra/mod.ts";
 import {
   connect,
+  deferred,
   Empty,
   JSONCodec,
+  Msg,
   NatsConnection,
   ServiceInfo,
-  Msg, ServiceStats
+  ServiceStats,
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
 import {
@@ -71,6 +73,11 @@ root.addCommand({
     for await (const m of iter) {
       buf.push(jc.decode((m as Msg).data));
     }
+    buf.sort((a, b) => {
+      const A = `${a.name} ${a.version}`;
+      const B = `${b.name} ${b.version}`;
+      return B.localeCompare(A);
+    });
     console.table(buf);
     await nc.close();
     return 0;
@@ -97,10 +104,15 @@ root.addCommand({
       const stats = o.stats[0];
       delete stats.data;
       const data = stats.data;
-      const oo = o as Record<string,unknown>;
+      const oo = o as Record<string, unknown>;
       delete oo.stats;
       buf.push(Object.assign(o, stats, data));
     }
+
+    buf.sort((a, b) => {
+      return b.num_requests - a.num_requests;
+    });
+
     console.table(buf);
     await nc.close();
     return 0;
@@ -125,6 +137,11 @@ root.addCommand({
     for await (const m of iter) {
       buf.push(infoJC.decode((m as Msg).data));
     }
+    buf.sort((a, b) => {
+      const A = `${a.name} ${a.version}`;
+      const B = `${b.name} ${b.version}`;
+      return B.localeCompare(A);
+    });
     console.table(buf);
     await nc.close();
     return 0;
@@ -136,6 +153,60 @@ root.addCommand({
   short: "get services schema",
   run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
     cmd.stdout("not implemented");
+    return 0;
+  },
+});
+
+const start = root.addCommand({
+  use: "start",
+  short: "start a service",
+});
+
+start.addFlag({
+  name: "count",
+  type: "number",
+  usage: "number of services to start",
+  default: "1",
+  persistent: true,
+});
+
+start.addCommand({
+  use: "generator",
+  short: "start generator(s)",
+  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+    const d = deferred();
+    const max = flags.value<number>("count");
+    for (let i = 0; i < max; i++) {
+      const worker = new Worker(new URL("service.ts", import.meta.url).href, {
+        type: "module",
+        deno: true,
+      });
+    }
+
+    // wait forever
+    await d;
+    return 0;
+  },
+});
+
+start.addCommand({
+  use: "frequency",
+  short: "start frequency(s)",
+  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+    const d = deferred();
+    const max = flags.value<number>("count");
+    for (let i = 0; i < max; i++) {
+      const worker = new Worker(
+        new URL("frequency-service.ts", import.meta.url).href,
+        {
+          type: "module",
+          deno: true,
+        },
+      );
+    }
+
+    // wait forever
+    await d;
     return 0;
   },
 });

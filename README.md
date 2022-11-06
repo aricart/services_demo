@@ -6,24 +6,16 @@ A Demo of the NATS Services Framework
 
 ```bash
 npm install
-deno compile -A service.ts
-deno compile -A frequency-service.ts
 deno compile -A service-adm.ts
 deno compile -A get-badge.ts
 deno compile -A get-freq.ts
 ```
 
-
 # start a bunch of services
 
 ```bash
-./service &
-./service &
-```
-
-# start a frequency service
-```bash
-./frequency-service &
+./service-adm start generator --count 10
+./service-adm start frequency --count 3
 ```
 
 # discover all the services
@@ -42,5 +34,3 @@ deno compile -A get-freq.ts
 ```
 
 # recheck service stats and info
-
-
