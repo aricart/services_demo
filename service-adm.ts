@@ -107,9 +107,7 @@ root.addCommand({
     const buf: Record<string, unknown>[] = [];
     for await (const m of iter) {
       const o = infoJC.decode((m as Msg).data);
-      const stats = o.stats[0] as Record<string,unknown>
-      stats.average_latency = `${millis(stats.average_latency)} ms`;
-      stats.total_latency = `${millis(stats.total_latency)} ms`;
+      const stats = o.stats[0]
       delete stats.data;
       const data = stats.data;
       const oo = o as unknown as Record<string, number>;
