@@ -8,7 +8,11 @@ import {
 
 const root = cli({
   use: "get-freq ",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const nc = await createConnection(flags);
     const msg = await nc.request(
       "badge.freq",
@@ -29,7 +33,7 @@ root.addFlag({
   persistent: true,
 });
 
-async function createConnection(flags: Flags): Promise<NatsConnection> {
+function createConnection(flags: Flags): Promise<NatsConnection> {
   const servers = [flags.value<string>("server")];
   return connect({ servers });
 }

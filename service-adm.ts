@@ -41,7 +41,7 @@ root.addFlag({
   persistent: true,
 });
 
-async function createConnection(flags: Flags): Promise<NatsConnection> {
+function createConnection(flags: Flags): Promise<NatsConnection> {
   const servers = [flags.value<string>("server")];
   return connect({ servers });
 }
@@ -62,7 +62,11 @@ function subject(verb: string, flags: Flags): string {
 root.addCommand({
   use: "ping [--name] [--id]",
   short: "pings services",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const jc = JSONCodec<ServiceInfo>();
     const nc = await createConnection(flags);
     const subj = subject("PING", flags);
@@ -87,7 +91,11 @@ root.addCommand({
 root.addCommand({
   use: "status [--name] [--id]",
   short: "get service status",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const infoJC = JSONCodec<ServiceStats>();
     const nc = await createConnection(flags);
     const subj = subject("STATUS", flags);
@@ -98,19 +106,19 @@ root.addCommand({
         strategy: RequestStrategy.JitterTimer,
       },
     );
-    const buf: unknown[] = [];
+    const buf: Record<string, number>[] = [];
     for await (const m of iter) {
       const o = infoJC.decode((m as Msg).data);
       const stats = o.stats[0];
       delete stats.data;
       const data = stats.data;
-      const oo = o as Record<string, unknown>;
+      const oo = o as unknown as Record<string, number>;
       delete oo.stats;
       buf.push(Object.assign(o, stats, data));
     }
 
-    buf.sort((a, b) => {
-      return b.num_requests - a.num_requests;
+    buf.sort((a: Record<string, number>, b: Record<string, number>) => {
+      return b?.num_requests - a?.num_requests;
     });
 
     console.table(buf);
@@ -122,7 +130,11 @@ root.addCommand({
 root.addCommand({
   use: "info [--name] [--id]",
   short: "get service info",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const infoJC = JSONCodec<ServiceInfo>();
     const nc = await createConnection(flags);
     const subj = subject("INFO", flags);
@@ -151,9 +163,9 @@ root.addCommand({
 root.addCommand({
   use: "schema [--name] [--id]",
   short: "get services schema",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: (cmd: Command, _args: string[], _flags: Flags): Promise<number> => {
     cmd.stdout("not implemented");
-    return 0;
+    return Promise.resolve(0);
   },
 });
 
@@ -173,11 +185,15 @@ start.addFlag({
 start.addCommand({
   use: "generator",
   short: "start generator(s)",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const d = deferred();
     const max = flags.value<number>("count");
     for (let i = 0; i < max; i++) {
-      const worker = new Worker(new URL("service.ts", import.meta.url).href, {
+      new Worker(new URL("service.ts", import.meta.url).href, {
         type: "module",
         deno: true,
       });
@@ -192,11 +208,15 @@ start.addCommand({
 start.addCommand({
   use: "frequency",
   short: "start frequency(s)",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (
+    _cmd: Command,
+    _args: string[],
+    flags: Flags,
+  ): Promise<number> => {
     const d = deferred();
     const max = flags.value<number>("count");
     for (let i = 0; i < max; i++) {
-      const worker = new Worker(
+      new Worker(
         new URL("frequency-service.ts", import.meta.url).href,
         {
           type: "module",

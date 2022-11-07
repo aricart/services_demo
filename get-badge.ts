@@ -7,7 +7,7 @@ import {
 
 const root = cli({
   use: "get-badge --name name [--company company]",
-  run: async (cmd: Command, args: string[], flags: Flags): Promise<number> => {
+  run: async (cmd: Command, _args: string[], flags: Flags): Promise<number> => {
     const name = flags.value<string>("name");
     const company = flags.value<string>("company");
     const nc = await createConnection(flags);
@@ -48,7 +48,7 @@ root.addFlag({
   persistent: true,
 });
 
-async function createConnection(flags: Flags): Promise<NatsConnection> {
+function createConnection(flags: Flags): Promise<NatsConnection> {
   const servers = [flags.value<string>("server")];
   return connect({ servers });
 }

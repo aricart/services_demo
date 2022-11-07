@@ -1,7 +1,6 @@
 import {
   addService,
   connect,
-  Endpoint,
   headers,
   JSONCodec,
   ServiceError,
@@ -9,7 +8,6 @@ import {
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 import { generateBadge } from "./generator.ts";
 import { Empty } from "https://raw.githubusercontent.com/nats-io/nats.deno/main/nats-base-client/mod.ts";
-import { ServiceImpl } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/nats-base-client/service.ts";
 
 type Badge = {
   name: string;
@@ -27,7 +25,7 @@ const service = await addService(nc, {
   name: "badge_generator",
   version: "0.0.1",
   description: "Generates a RethinkConn badge",
-  statusHandler: (endpoint) => {
+  statusHandler: (_endpoint) => {
     return Promise.resolve({
       generatedBadges,
       errors,
@@ -53,7 +51,7 @@ const service = await addService(nc, {
       generateBadge(req)
         .then((d) => {
           msg.respond(d);
-          console.log(`${service.name} generated a badge`);
+          generatedBadges++;
         })
         .catch((err) => {
           errors++;
