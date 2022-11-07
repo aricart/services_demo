@@ -1,4 +1,4 @@
-import { cli, Command, Flags } from "https://deno.land/x/cobra/mod.ts";
+import { cli, Command, Flags } from "https://deno.land/x/cobra@v0.0.9/mod.ts";
 import {
   connect,
   deferred,
@@ -6,13 +6,10 @@ import {
   JSONCodec,
   Msg,
   NatsConnection,
+  RequestStrategy,
   ServiceInfo,
   ServiceStats,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
-
-import {
-  RequestStrategy,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/nats-base-client/types.ts";
+} from "https://raw.githubusercontent.com/nats-io/nats.deno/fix-request-strategy/src/mod.ts";
 
 const root = cli({
   use: "service-adm (ping|info|status|schema) [--name name] [--id id]",

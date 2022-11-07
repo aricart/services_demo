@@ -7,6 +7,4 @@ Deno.test("generator", async () => {
     company: "Synadia Communications, Inc",
   }, false);
   assert(bytes?.length);
-
-  await Deno.writeFile("/tmp/badge.pdf", bytes);
 });

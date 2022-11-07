@@ -1,4 +1,4 @@
-import { cli, Command, Flags } from "https://deno.land/x/cobra/mod.ts";
+import { cli, Command, Flags } from "https://deno.land/x/cobra@v0.0.9/mod.ts";
 import {
   connect,
   JSONCodec,

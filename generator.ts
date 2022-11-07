@@ -1,4 +1,4 @@
-import { createRequire } from "https://deno.land/std/node/module.ts";
+import { createRequire } from "https://deno.land/std@0.161.0/node/module.ts";
 const require = createRequire(import.meta.url);
 
 const { PDFDocument, grayscale, rgb } = require(
@@ -9,12 +9,13 @@ const fontKit = require("@pdf-lib/fontkit");
 let highResTemplate: Uint8Array;
 let lowResTemplate: Uint8Array;
 
-const BASE_URL = `https://raw.githubusercontent.com/aricart/services_demo/main`;
+const BASE_URL =
+  `https://raw.githubusercontent.com/aricart/services_demo/main/assets`;
 
 async function load(url: string): Promise<Uint8Array> {
   const r = await fetch(url);
   if (!r.ok) {
-    return Promise.reject(new Error("error loading badge.pdf"));
+    return Promise.reject(new Error(`error loading resource ${url}`));
   }
   const v = new Uint8Array(await r.arrayBuffer());
   console.log(`loaded ${url}`);
@@ -27,7 +28,6 @@ async function getTemplate(highRes: boolean): Promise<Uint8Array> {
       highResTemplate = await load(
         `${BASE_URL}/badge.pdf`,
       );
-      // highResTemplate = await Deno.readFile("./badge.pdf");
     }
     return highResTemplate;
   }
@@ -35,7 +35,6 @@ async function getTemplate(highRes: boolean): Promise<Uint8Array> {
     lowResTemplate = await load(
       `${BASE_URL}/badge.png`,
     );
-    // lowResTemplate = await Deno.readFile("./badge.png");
   }
   return lowResTemplate;
 }
