@@ -198,5 +198,5 @@ export async function generateBadge(
   // rescale the document so it prints smaller
   page.scale(0.5, 0.5);
   page.setSize(300, 400);
-  return await doc.save();
+  return doc.save();
 }

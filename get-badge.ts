@@ -12,7 +12,6 @@ const root = cli({
     const company = flags.value<string>("company");
     const nc = await createConnection(flags);
     const fp = await Deno.makeTempFile();
-    console.log(fp);
     const jc = JSONCodec();
     const msg = await nc.request(
       "generate.badge",

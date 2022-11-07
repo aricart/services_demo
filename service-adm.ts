@@ -4,12 +4,13 @@ import {
   deferred,
   Empty,
   JSONCodec,
+  millis,
   Msg,
   NatsConnection,
   RequestStrategy,
   ServiceInfo,
   ServiceStats,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/fix-request-strategy/src/mod.ts";
+} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
 const root = cli({
   use: "service-adm (ping|info|status|schema) [--name name] [--id id]",
@@ -103,10 +104,12 @@ root.addCommand({
         strategy: RequestStrategy.JitterTimer,
       },
     );
-    const buf: Record<string, number>[] = [];
+    const buf: Record<string, unknown>[] = [];
     for await (const m of iter) {
       const o = infoJC.decode((m as Msg).data);
-      const stats = o.stats[0];
+      const stats = o.stats[0] as Record<string,unknown>
+      stats.average_latency = `${millis(stats.average_latency)} ms`;
+      stats.total_latency = `${millis(stats.total_latency)} ms`;
       delete stats.data;
       const data = stats.data;
       const oo = o as unknown as Record<string, number>;
