@@ -14,27 +14,18 @@ type Badge = {
 const jc = JSONCodec<Badge>();
 const nc = await connect({ servers: "demo.nats.io" });
 
-let generatedBadges = 0;
-let errors = 0;
-let lastError: Error | null = null;
-
 const service = await addService(nc, {
   name: "badge_generator",
   version: "0.0.1",
   description: "Generates a RethinkConn badge",
-  statusHandler: (_endpoint) => {
-    return Promise.resolve({
-      generatedBadges,
-      errors,
-      lastError: lastError,
-    });
+  schema: {
+    request: "{ name: string, company?: string }",
+    response: "Uint8Array",
   },
   endpoint: {
     subject: "generate.badge",
     handler: (err, msg): Promise<void> => {
       if (err) {
-        errors++;
-        lastError = err;
         console.log(
           `${service.name} received a subscription error: ${err.message}`,
         );
@@ -48,7 +39,6 @@ const service = await addService(nc, {
       return generateBadge(req)
         .then((d) => {
           msg.respond(d);
-          generatedBadges++;
           return Promise.resolve();
         })
         .catch((err) => {

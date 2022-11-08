@@ -8,7 +8,9 @@ import {
   Msg,
   NatsConnection,
   RequestStrategy,
+  ServiceErrorHeader,
   ServiceInfo,
+  ServiceSchema,
   ServiceStats,
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
@@ -44,12 +46,18 @@ function createConnection(flags: Flags): Promise<NatsConnection> {
   return connect({ servers });
 }
 
-function subject(verb: string, flags: Flags): string {
+function subject(verb: string, flags: Flags, required = false): string {
   const chunks = ["$SRV", verb];
   const name = flags.value<string>("name").toUpperCase();
+  if (required && name === "") {
+    throw new Error("--name is required");
+  }
   if (name) {
     chunks.push(name);
     const id = flags.value<string>("id").toUpperCase();
+    if (required && id === "") {
+      throw new Error("--id is required");
+    }
     if (id) {
       chunks.push(id);
     }
@@ -204,11 +212,22 @@ root.addCommand({
 });
 
 root.addCommand({
-  use: "schema [--name] [--id]",
+  use: "schema --name name --id id",
   short: "get services schema",
-  run: (cmd: Command, _args: string[], _flags: Flags): Promise<number> => {
-    cmd.stdout("not implemented");
-    return Promise.resolve(0);
+  run: async (cmd: Command, _args: string[], flags: Flags): Promise<number> => {
+    const jc = JSONCodec<ServiceSchema>();
+    const nc = await createConnection(flags);
+    const subj = subject("SCHEMA", flags, true);
+    const r = await nc.request(subj);
+    if (r.headers?.has(ServiceErrorHeader)) {
+      console.log(
+        `error while processing request: ${r.headers.get(ServiceErrorHeader)}`,
+      );
+    } else {
+      console.table(jc.decode(r.data));
+    }
+    await nc.close();
+    return 0;
   },
 });
 
