@@ -34,38 +34,28 @@ const service = await addService(nc, {
   },
   endpoint: {
     subject: "generate.badge",
-    handler: (err, msg): Error | void => {
+    handler: (err, msg): Promise<void> => {
       if (err) {
         errors++;
         lastError = err;
         console.log(
           `${service.name} received a subscription error: ${err.message}`,
         );
-        return err;
+        return Promise.reject(err);
       }
       const req = jc.decode(msg.data);
       if (typeof req.name !== "string" || req.name.length === 0) {
         console.log(`${service.name} is rejecting a request without a name`);
-        return new ServiceError(400, "name is required");
+        return Promise.reject(new ServiceError(400, "name is required"));
       }
-      generateBadge(req)
+      return generateBadge(req)
         .then((d) => {
           msg.respond(d);
           generatedBadges++;
+          return Promise.resolve();
         })
         .catch((err) => {
-          errors++;
-          lastError = err;
-          const h = headers();
-          if (err instanceof ServiceError) {
-            h.set(ServiceErrorHeader, `${err.code} ${err.message}`);
-          } else {
-            h.set(ServiceErrorHeader, `400 ${err.message}`);
-          }
-          console.log(
-            `${service.name} failed to generate a badge: ${err.message}`,
-          );
-          msg.respond(Empty, { headers: h });
+          return Promise.reject(err);
         });
     },
   },

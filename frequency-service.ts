@@ -34,11 +34,12 @@ const service = await addService(nc, {
   description: "monitors names",
   endpoint: {
     subject: "badge.freq",
-    handler: (err, msg): Error | void => {
+    handler: (err, msg): Promise<void> => {
       if (err) {
-        return err;
+        return Promise.reject(err);
       }
       msg.respond(jc.encode(r));
+      return Promise.resolve();
     },
   },
 });

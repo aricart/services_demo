@@ -71,16 +71,27 @@ root.addCommand({
     const iter = await nc.requestMany(subj, Empty, {
       strategy: RequestStrategy.JitterTimer,
     });
-    const buf: ServiceInfo[] = [];
+
+    const buf: Msg[] = [];
     for await (const m of iter) {
-      buf.push(jc.decode((m as Msg).data));
+      if (m instanceof Error) {
+        break;
+      }
+      buf.push(m);
     }
-    buf.sort((a, b) => {
+    const infos = buf.map((m) => {
+      return jc.decode(m.data);
+    });
+    infos.sort((a, b) => {
       const A = `${a.name} ${a.version}`;
       const B = `${b.name} ${b.version}`;
       return B.localeCompare(A);
     });
-    console.table(buf);
+    if (infos.length) {
+      console.table(infos);
+    } else {
+      console.log("no services found");
+    }
     await nc.close();
     return 0;
   },
@@ -104,22 +115,46 @@ root.addCommand({
         strategy: RequestStrategy.JitterTimer,
       },
     );
-    const buf: Record<string, unknown>[] = [];
+
+    const buf: Msg[] = [];
     for await (const m of iter) {
-      const o = infoJC.decode((m as Msg).data);
-      const stats = o.stats[0]
-      delete stats.data;
-      const data = stats.data;
-      const oo = o as unknown as Record<string, number>;
-      delete oo.stats;
-      buf.push(Object.assign(o, stats, data));
+      if (m instanceof Error) {
+        break;
+      }
+      buf.push(m);
     }
 
-    buf.sort((a: Record<string, number>, b: Record<string, number>) => {
-      return b?.num_requests - a?.num_requests;
+    const infos = buf.map((m) => {
+      return infoJC.decode(m.data);
     });
 
-    console.table(buf);
+    const stats = infos.map((info) => {
+      const { id, version, name } = info;
+      let { num_requests, num_errors, total_latency, average_latency } =
+        info.stats[0];
+      total_latency = millis(total_latency);
+      average_latency = millis(average_latency);
+      return {
+        name,
+        version,
+        id,
+        num_requests,
+        num_errors,
+        total_latency,
+        average_latency,
+      };
+    });
+
+    stats.sort((a, b) => {
+      return b.num_requests - a.num_requests;
+    });
+
+    if (stats.length) {
+      console.table(stats);
+    } else {
+      console.log("no services found");
+    }
+
     await nc.close();
     return 0;
   },
@@ -143,16 +178,26 @@ root.addCommand({
         strategy: RequestStrategy.JitterTimer,
       },
     );
-    const buf: ServiceInfo[] = [];
+    const buf: Msg[] = [];
     for await (const m of iter) {
-      buf.push(infoJC.decode((m as Msg).data));
+      if (m instanceof Error) {
+        break;
+      }
+      buf.push(m);
     }
-    buf.sort((a, b) => {
+    const infos = buf.map((m) => {
+      return infoJC.decode(m.data);
+    });
+    infos.sort((a, b) => {
       const A = `${a.name} ${a.version}`;
       const B = `${b.name} ${b.version}`;
       return B.localeCompare(A);
     });
-    console.table(buf);
+    if (infos.length) {
+      console.table(infos);
+    } else {
+      console.log("no services found");
+    }
     await nc.close();
     return 0;
   },
@@ -170,6 +215,9 @@ root.addCommand({
 const start = root.addCommand({
   use: "start",
   short: "start a service",
+  run: () => {
+    return Promise.resolve(0);
+  },
 });
 
 start.addFlag({

@@ -3,6 +3,7 @@ import {
   connect,
   JSONCodec,
   NatsConnection,
+  ServiceErrorHeader,
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
 const root = cli({
@@ -11,15 +12,23 @@ const root = cli({
     const name = flags.value<string>("name");
     const company = flags.value<string>("company");
     const nc = await createConnection(flags);
-    const fp = await Deno.makeTempFile();
     const jc = JSONCodec();
     const msg = await nc.request(
       "generate.badge",
       jc.encode({ name, company }),
       { timeout: 30 * 1000 },
     );
+
+    if (msg.headers?.get(ServiceErrorHeader)) {
+      console.log(
+        `error processing your request: ${msg.headers.get(ServiceErrorHeader)}`,
+      );
+      return 1;
+    }
+
+    const fp = await Deno.makeTempFile({ suffix: ".pdf" });
     await Deno.writeFile(fp, msg.data);
-    cmd.stdout(`wrote your badge to file://${fp}`);
+    cmd.stdout(`wrote badge to file://${fp}`);
     return 0;
   },
 });

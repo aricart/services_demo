@@ -4,6 +4,7 @@ import {
   Empty,
   JSONCodec,
   NatsConnection,
+  ServiceErrorHeader,
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 
 const root = cli({
@@ -19,6 +20,14 @@ const root = cli({
       Empty,
       { timeout: 30 * 1000 },
     );
+
+    if (msg.headers?.get(ServiceErrorHeader)) {
+      console.log(
+        `error processing your request: ${msg.headers.get(ServiceErrorHeader)}`,
+      );
+      return 1;
+    }
+
     const jc = JSONCodec();
     console.table(jc.decode(msg.data));
     return 0;
