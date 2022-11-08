@@ -124,7 +124,7 @@ function fitLine(font: PDFFont, text: string, maxFontSize = 80): TextInfo {
   };
 }
 
-function debugRectangle(
+function _debugRectangle(
   // @ts-ignore: page is a real object
   page: PDFPage,
   r: Rectangle,

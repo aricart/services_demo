@@ -1,11 +1,8 @@
 import {
   addService,
   connect,
-  Empty,
-  headers,
   JSONCodec,
   ServiceError,
-  ServiceErrorHeader,
 } from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
 import { generateBadge } from "./generator.ts";
 

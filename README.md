@@ -2,35 +2,47 @@
 
 A Demo of the NATS Services Framework
 
-# build
+You need deno installed:
 
 ```bash
+# On Linux or Macs:
+curl -fsSL https://deno.land/install.sh | sh
+# On Windows PowerShell:
+irm https://deno.land/install.ps1 | iex
+```
+
+If you want to run the services locally:
+
+```bash
+cd <this directory>
 npm install
-deno compile -A service-adm.ts
-deno compile -A get-badge.ts
-deno compile -A get-freq.ts
+deno run -A service-adm.ts start generator --count 2
+deno run -A service-adm.ts start frequency --count 1
 ```
 
-# start a bunch of services
+If you want to get a badge:
 
 ```bash
-./service-adm start generator --count 10
-./service-adm start frequency --count 3
+# Check at least one generator service is running:
+deno run -A service-adm.ts ping -n badge_generator
+# or:
+deno run -A https://raw.githubusercontent.com/aricart/services_demo/main/service-adm.ts ping -n badge_generator
+┌───────┬───────────────────┬──────────────────────────┬─────────┬─────────────────────────────────┬──────────────────┐
+│ (idx) │ name              │ id                       │ version │ description                     │ subject          │
+├───────┼───────────────────┼──────────────────────────┼─────────┼─────────────────────────────────┼──────────────────┤
+│     0 │ "badge_generator" │ "URDPJE2ZYOZ6JWNYZRDVSB" │ "0.0.1" │ "Generates a RethinkConn badge" │ "generate.badge" │
+...
+└───────┴───────────────────┴──────────────────────────┴─────────┴─────────────────────────────────┴──────────────────┘
+
+deno run -A https://raw.githubusercontent.com/aricart/services_demo/main/get-badge.ts --name "My Name" --company "My Company"
 ```
 
-# discover all the services
+# reget the status to see stats updating
 
 ```bash
-./service-adm ping
-./service-adm status
-./service-adm info
+deno run -A service-adm.ts ping
+deno run -A service-adm.ts status
+deno run -A service-adm.ts info
+
+deno run -A https://raw.githubusercontent.com/aricart/services_demo/main/get-freq.ts
 ```
-
-# generate some badges and get frequency
-
-```bash
-./get-badge --name "Memo Service Tester" --company "Acme Productions"
-./get-freq
-```
-
-# recheck service stats and info

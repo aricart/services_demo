@@ -29,7 +29,13 @@ const root = cli({
     }
 
     const jc = JSONCodec();
-    console.table(jc.decode(msg.data));
+    const m = jc.decode(msg.data);
+    if (Object.keys(m).length) {
+      console.table(m);
+    } else {
+      console.log("no badge generation requests seen");
+    }
+
     return 0;
   },
 });
