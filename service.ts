@@ -26,14 +26,17 @@ const service = await addService(nc, {
     subject: "generate.badge",
     handler: (err, msg): Promise<void> => {
       if (err) {
-        console.log(
-          `${service.name} received a subscription error: ${err.message}`,
-        );
+        // stop will stop the service, and close it with the specified error
+        service.stop(err).then();
         return Promise.reject(err);
       }
       const req = jc.decode(msg.data);
       if (typeof req.name !== "string" || req.name.length === 0) {
         console.log(`${service.name} is rejecting a request without a name`);
+        // if you reject, the service will respond with an error
+        // by convention the error is simply a header in the response
+        // o.c. your service may have a different way of signaling a
+        // problem.
         return Promise.reject(new ServiceError(400, "name is required"));
       }
       return generateBadge(req)
@@ -48,6 +51,8 @@ const service = await addService(nc, {
   },
 });
 
+// you can monitor if your service closes by awaiting done - it resolves
+// to null or an error
 service.done.then((err: Error | null) => {
   if (err) {
     console.log(`${service.name} stopped with error: ${err.message}`);
