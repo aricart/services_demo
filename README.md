@@ -55,7 +55,7 @@ RethinkConn badge:
 
 # if you got a table with one or more services as shown above, you can then use the `get-badge`
 # tool to get your own badge.
-# https://bit.ly/3EjWiMg is redirecting to:
+# https://bit.ly/3EjWiMg is redirected to:
 # https://raw.githubusercontent.com/aricart/services_demo/main/get-badge.ts
 deno run -A https://bit.ly/3EjWiMg --name Demo --company "All Things NATS Are Cool"
 ```
@@ -71,10 +71,10 @@ git clone git@github.com:/aricart/services_demo
 cd services_demo
 npm install
 deno run -A service-adm.ts start generator --count 2 
-# in another terminall session
-deno run -A service-adm.ts start frequency --count 1 &
+# in another terminal session
+deno run -A service-adm.ts start frequency --count 1
 
-# to see your all services running
+# to see all services running
 deno run -A service-adm.ts ping
 ```
 
