@@ -1,6 +1,7 @@
 import { cli, Command, Flags } from "https://deno.land/x/cobra@v0.0.9/mod.ts";
 import {
   connect,
+  ErrorCode,
   JSONCodec,
   NatsConnection,
   ServiceErrorHeader,
@@ -13,23 +14,31 @@ const root = cli({
     const company = flags.value<string>("company");
     const nc = await createConnection(flags);
     const jc = JSONCodec();
-    const msg = await nc.request(
+    return nc.request(
       "generate.badge",
       jc.encode({ name, company }),
       { timeout: 30 * 1000 },
-    );
-
-    if (msg.headers?.get(ServiceErrorHeader)) {
-      console.log(
-        `error processing your request: ${msg.headers.get(ServiceErrorHeader)}`,
-      );
+    ).then((msg) => {
+      if (msg.headers?.get(ServiceErrorHeader)) {
+        console.log(
+          `error processing your request: ${
+            msg.headers.get(ServiceErrorHeader)
+          }`,
+        );
+        return 1;
+      }
+      const fp = Deno.makeTempFileSync({ suffix: ".pdf" });
+      Deno.writeFileSync(fp, msg.data);
+      cmd.stdout(`wrote badge to file://${fp}`);
+      return 0;
+    }).catch((err) => {
+      if (err.code === ErrorCode.NoResponders) {
+        cmd.stdout(`sorry no generator-service was found`);
+      } else {
+        cmd.stdout(`error: ${err.message}`);
+      }
       return 1;
-    }
-
-    const fp = await Deno.makeTempFile({ suffix: ".pdf" });
-    await Deno.writeFile(fp, msg.data);
-    cmd.stdout(`wrote badge to file://${fp}`);
-    return 0;
+    });
   },
 });
 root.addFlag({

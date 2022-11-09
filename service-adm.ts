@@ -69,7 +69,7 @@ root.addCommand({
   use: "ping [--name] [--id]",
   short: "pings services",
   run: async (
-    _cmd: Command,
+    cmd: Command,
     _args: string[],
     flags: Flags,
   ): Promise<number> => {
@@ -98,7 +98,7 @@ root.addCommand({
     if (infos.length) {
       console.table(infos);
     } else {
-      console.log("no services found");
+      cmd.stdout("no services found");
     }
     await nc.close();
     return 0;
@@ -109,7 +109,7 @@ root.addCommand({
   use: "status [--name] [--id]",
   short: "get service status",
   run: async (
-    _cmd: Command,
+    cmd: Command,
     _args: string[],
     flags: Flags,
   ): Promise<number> => {
@@ -160,7 +160,7 @@ root.addCommand({
     if (stats.length) {
       console.table(stats);
     } else {
-      console.log("no services found");
+      cmd.stdout("no services found");
     }
 
     await nc.close();
@@ -172,7 +172,7 @@ root.addCommand({
   use: "info [--name] [--id]",
   short: "get service info",
   run: async (
-    _cmd: Command,
+    cmd: Command,
     _args: string[],
     flags: Flags,
   ): Promise<number> => {
@@ -204,7 +204,7 @@ root.addCommand({
     if (infos.length) {
       console.table(infos);
     } else {
-      console.log("no services found");
+      cmd.stdout("no services found");
     }
     await nc.close();
     return 0;
@@ -220,7 +220,7 @@ root.addCommand({
     const subj = subject("SCHEMA", flags, true);
     const r = await nc.request(subj);
     if (r.headers?.has(ServiceErrorHeader)) {
-      console.log(
+      cmd.stdout(
         `error while processing request: ${r.headers.get(ServiceErrorHeader)}`,
       );
     } else {

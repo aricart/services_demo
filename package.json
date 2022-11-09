@@ -2,9 +2,10 @@
   "name": "services_demo",
   "version": "1.0.0",
   "description": "services_demo using nats javascript",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fmt": "deno fmt --ignore=node_modules",
+    "lint": "deno lint --ignore=node_modules"
   },
   "repository": {
     "type": "git",
