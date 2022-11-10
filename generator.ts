@@ -22,7 +22,7 @@ async function load(url: string): Promise<Uint8Array> {
   return v;
 }
 
-async function getTemplate(highRes: boolean): Promise<Uint8Array> {
+async function getTemplate(highRes = false): Promise<Uint8Array> {
   if (highRes) {
     if (!highResTemplate) {
       highResTemplate = await load(
@@ -40,6 +40,7 @@ async function getTemplate(highRes: boolean): Promise<Uint8Array> {
 }
 
 const fontBytes = await load(`${BASE_URL}/Inter-Bold.ttf`);
+await getTemplate();
 
 type Size = {
   width: number;
