@@ -1,9 +1,8 @@
 import {
-  addService,
   connect,
   JSONCodec,
   ServiceError,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
+} from "https://raw.githubusercontent.com/nats-io/nats.deno/main/src/mod.ts";
 import { generateBadge } from "./generator.ts";
 
 type Badge = {
@@ -14,7 +13,7 @@ type Badge = {
 const jc = JSONCodec<Badge>();
 const nc = await connect({ servers: "demo.nats.io" });
 
-const service = await addService(nc, {
+const service = await nc.services.add({
   name: "badge_generator",
   version: "0.0.1",
   description: "Generates a RethinkConn badge",
@@ -24,43 +23,44 @@ const service = await addService(nc, {
   },
   endpoint: {
     subject: "generate.badge",
-    handler: (err, msg): Promise<void> => {
+    handler: (err, msg) => {
       if (err) {
         // stop will stop the service, and close it with the specified error
         service.stop(err).then();
-        return Promise.reject(err);
+        return;
       }
       const req = jc.decode(msg.data);
       if (typeof req.name !== "string" || req.name.length === 0) {
-        console.log(`${service.name} is rejecting a request without a name`);
-        // if you reject, the service will respond with an error
-        // by convention the error is simply a header in the response
-        // o.c. your service may have a different way of signaling a
-        // problem.
-        return Promise.reject(new ServiceError(400, "name is required"));
+        console.log(
+          `${service.info().name} is rejecting a request without a name`,
+        );
+        // you can report an error to the client
+        msg.respondError(400, "name is required");
+        return;
       }
       return generateBadge(req)
         .then((d) => {
           msg.respond(d);
-          return Promise.resolve();
         })
         .catch((err) => {
-          return Promise.reject(err);
+          const sr = ServiceError.toServiceError(err);
+          msg.respondError(sr?.code, sr?.message);
         });
     },
   },
 });
 
+const si = service.info();
 // you can monitor if your service closes by awaiting done - it resolves
 // to null or an error
-service.done.then((err: Error | null) => {
+service.stopped.then((err: Error | null) => {
   if (err) {
-    console.log(`${service.name} stopped with error: ${err.message}`);
+    console.log(`${si.name} stopped with error: ${err.message}`);
   } else {
-    console.log(`${service.name} stopped.`);
+    console.log(`${si.name} stopped.`);
   }
 });
 
 console.log(
-  `${service.name} ${service.version} started with ID: ${service.id}`,
+  `${si.name} ${si.version} started with ID: ${si.id}`,
 );

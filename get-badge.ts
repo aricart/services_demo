@@ -5,7 +5,7 @@ import {
   JSONCodec,
   NatsConnection,
   ServiceErrorHeader,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
+} from "https://raw.githubusercontent.com/nats-io/nats.deno/main/src/mod.ts";
 
 const root = cli({
   use: "get-badge --name name [--company company]",

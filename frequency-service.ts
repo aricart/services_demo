@@ -1,8 +1,7 @@
 import {
-  addService,
   connect,
   JSONCodec,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/dev/src/mod.ts";
+} from "https://raw.githubusercontent.com/nats-io/nats.deno/main/src/mod.ts";
 
 type Badge = {
   name: string;
@@ -28,30 +27,33 @@ const sub = nc.subscribe("generate.badge");
   }
 })().catch();
 
-const service = await addService(nc, {
+const service = await nc.services.add({
   name: "frequency_service",
   version: "0.0.1",
   description: "monitors names",
   endpoint: {
     subject: "badge.freq",
-    handler: (err, msg): Promise<void> => {
+    handler: (err, msg) => {
       if (err) {
-        return Promise.reject(err);
+        // stop will stop the service, and close it with the specified error
+        service.stop(err).then();
+        return;
       }
       msg.respond(jc.encode(r));
-      return Promise.resolve();
     },
   },
 });
 
-service.done.then((err: Error | null) => {
+const si = service.info();
+
+service.stopped.then((err: Error | null) => {
   if (err) {
-    console.log(`${service.name} stopped with error: ${err.message}`);
+    console.log(`${si.name} stopped with error: ${err.message}`);
   } else {
-    console.log(`${service.name} stopped.`);
+    console.log(`${si.name} stopped.`);
   }
 });
 
 console.log(
-  `${service.name} ${service.version} started with ID: ${service.id}`,
+  `${si.name} ${si.version} started with ID: ${si.id}`,
 );
