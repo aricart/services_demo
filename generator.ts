@@ -1,10 +1,5 @@
-import { createRequire } from "https://deno.land/std@0.161.0/node/module.ts";
-const require = createRequire(import.meta.url);
-
-const { PDFDocument, grayscale, rgb } = require(
-  "pdf-lib",
-);
-const fontKit = require("@pdf-lib/fontkit");
+import { grayscale, PDFDocument, rgb } from "npm:pdf-lib";
+import fontkit from "npm:@pdf-lib/fontkit";
 
 let highResTemplate: Uint8Array;
 let lowResTemplate: Uint8Array;
@@ -155,7 +150,7 @@ export async function generateBadge(
     page = doc.addPage([png.width, png.height]);
     page.drawImage(png, { x: 0, y: 0, width: png.width, height: png.height });
   }
-  doc.registerFontkit(fontKit);
+  doc.registerFontkit(fontkit);
   const font = await doc.embedFont(fontBytes);
   page.setFontColor(grayscale(1.0));
   page.setFont(font);
