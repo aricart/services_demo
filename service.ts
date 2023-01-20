@@ -17,12 +17,12 @@ const service = await nc.services.add({
   name: "badge_generator",
   version: "0.0.1",
   description: "Generates a RethinkConn badge",
-  schema: {
-    request: "{ name: string, company?: string }",
-    response: "Uint8Array",
-  },
   endpoint: {
     subject: "generate.badge",
+    schema: {
+      request: "{ name: string, company?: string }",
+      response: "Uint8Array",
+    },
     handler: (err, msg) => {
       if (err) {
         // stop will stop the service, and close it with the specified error

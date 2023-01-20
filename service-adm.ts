@@ -92,11 +92,23 @@ root.addCommand({
     const nc = await createConnection(flags);
     const mc = nc.services.client();
     const opts = options(flags);
-    const stats = (await collect(await mc.stats(opts.name, opts.id))).map(
+    // stats are grouped by endpoint, if this is a multi-endpoint map this so that each
+    // endpoint looks like a service
+    const stats: { num_requests: number }[] = [];
+    (await collect(await mc.stats(opts.name, opts.id))).forEach(
       (s) => {
-        s.processing_time = millis(s.processing_time);
-        s.average_processing_time = millis(s.average_processing_time);
-        return s;
+        const { name, id, version } = s;
+        s.endpoints?.forEach((ne) => {
+          const line = Object.assign(ne, {
+            name,
+            endpoint: ne.name,
+            id,
+            version,
+          });
+          line.processing_time = millis(line.processing_time);
+          line.average_processing_time = millis(line.average_processing_time);
+          stats.push(line);
+        });
       },
     );
 
