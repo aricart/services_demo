@@ -1,11 +1,6 @@
 import { cli, Command, Flags } from "https://deno.land/x/cobra@v0.0.9/mod.ts";
-import {
-  connect,
-  deferred,
-  millis,
-  NatsConnection,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/main/src/mod.ts";
-import { collect } from "https://raw.githubusercontent.com/nats-io/nats.deno/main/nats-base-client/util.ts";
+import { connect, deferred, millis, NatsConnection } from "./natslib.ts";
+import { collect } from "https://raw.githubusercontent.com/nats-io/nats.deno/service-changes/nats-base-client/util.ts";
 
 const root = cli({
   use: "service-adm (ping|info|status|schema) [--name name] [--id id]",
@@ -148,24 +143,6 @@ root.addCommand({
     );
     if (infos.length) {
       console.table(infos);
-    } else {
-      cmd.stdout("no services found");
-    }
-    await nc.close();
-    return 0;
-  },
-});
-
-root.addCommand({
-  use: "schema --name name --id id",
-  short: "get services schema",
-  run: async (cmd: Command, _args: string[], flags: Flags): Promise<number> => {
-    const nc = await createConnection(flags);
-    const mc = nc.services.client();
-    const opts = options(flags);
-    const schemas = await collect(await mc.schema(opts.name, opts.id));
-    if (schemas.length) {
-      console.table(schemas);
     } else {
       cmd.stdout("no services found");
     }

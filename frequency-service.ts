@@ -1,7 +1,4 @@
-import {
-  connect,
-  JSONCodec,
-} from "https://raw.githubusercontent.com/nats-io/nats.deno/main/src/mod.ts";
+import { connect, JSONCodec } from "./natslib.ts";
 
 type Badge = {
   name: string;
@@ -31,16 +28,17 @@ const service = await nc.services.add({
   name: "frequency_service",
   version: "0.0.1",
   description: "monitors names",
-  endpoint: {
-    subject: "badge.freq",
-    handler: (err, msg) => {
-      if (err) {
-        // stop will stop the service, and close it with the specified error
-        service.stop(err).then();
-        return;
-      }
-      msg.respond(jc.encode(r));
-    },
+});
+
+service.addEndpoint("freq", {
+  subject: "badge.freq",
+  handler: (err, msg) => {
+    if (err) {
+      // stop will stop the service, and close it with the specified error
+      service.stop(err).then();
+      return;
+    }
+    msg.respond(jc.encode(r));
   },
 });
 
